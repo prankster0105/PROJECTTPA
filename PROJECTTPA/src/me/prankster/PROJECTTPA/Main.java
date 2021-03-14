@@ -1,17 +1,27 @@
 package me.prankster.PROJECTTPA;
 
 import me.prankster.PROJECTTPA.commands.Tpa;
+import me.prankster.PROJECTTPA.commands.TpaAccept;
+import me.prankster.PROJECTTPA.commands.TpaDeny;
 import me.prankster.PROJECTTPA.data.CurrentRequests;
+import me.prankster.PROJECTTPA.other.GetPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Map;
 
 public class Main extends JavaPlugin {
 
+    BukkitScheduler scheduler = Bukkit.getScheduler();
+
     static Map<String, String> Requests = CurrentRequests.Requests;
+
+    public JavaPlugin Main() {
+        return (JavaPlugin)this;
+    }
 
     public static boolean checkForRequest(String recipientName) {
         if (Requests.containsKey(recipientName)) {
@@ -27,11 +37,18 @@ public class Main extends JavaPlugin {
             Player recipient = Bukkit.getServer().getPlayer(key);
 
             if (!(winner == null)) {
-                winner.sendMessage(ChatColor.YELLOW + "Teleporting...");
+                winner.sendMessage(ChatColor.YELLOW + "Teleporting in 5 seconds...");
             }
 
             if (!(recipient == null)) {
-                winner.teleport(recipient);
+                recipient.sendMessage(ChatColor.YELLOW + "Teleporting " + Requests.get(key) + " to you in 5 seconds...");
+
+                Bukkit.getScheduler().runTaskLater(GetPlugin.returnPlugin(), new Runnable() {
+                    @Override
+                    public void run() {
+                        winner.teleport(recipient);
+                    }
+                }, 100L);
             }
 
             Requests.remove(key);
@@ -66,5 +83,7 @@ public class Main extends JavaPlugin {
 
     void registerCommands() {
         new Tpa(this);
+        new TpaAccept(this);
+        new TpaDeny(this);
     }
 }
